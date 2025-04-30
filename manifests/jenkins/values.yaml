@@ -1,0 +1,29 @@
+controller:
+  installPlugins:
+    - job-dsl:1.83
+    - git:5.2.1
+    - github:1.37.3
+  admin:
+    existingSecret: jenkins-admin
+  seedJob:
+    enabled: true
+    script: |
+      freeStyleJob('Seed-GitLab') {
+        description('Seeds GitLab jobs into Jenkins')
+        scm {
+          git {
+            remote {
+              url('https://gitlab.com/your-org/pipelines.git')
+              credentials('gitlab-credentials')
+            }
+            branches('*/main')
+          }
+        }
+        steps {
+          dsl {
+            external('definitions/*.groovy')
+            removeAction('DELETE')
+          }
+        }
+      }
+      queue('Seed-GitLab')
